@@ -1,44 +1,38 @@
-[![npm version](https://badge.fury.io/js/base-es6-template.svg)](https://badge.fury.io/js/base-es6-template)
-[![npm downloads](https://img.shields.io/npm/dt/base-es6-template.svg?style=flat)](https://www.npmjs.com/package/base-es6-template)
+[![npm version](https://badge.fury.io/js/n-arg-parser.svg)](https://badge.fury.io/js/n-arg-parser)
+[![npm downloads](https://img.shields.io/npm/dt/n-arg-parser.svg?style=flat)](https://www.npmjs.com/package/n-arg-parser)
 
 ### Installation
 ```bash
-Click on green button "Use this template".
+npm i -g n-arg-parser
 ```
 
-### Flow Capabilities
+### Features
 ```yaml
-- Before commit:
-- Check code and autofix common errors.  (npm run precommit)
-- Check commit comment using git hooks using husky.
+Auto Parser For Argument Value.
+- Int.
+- Float.
+- String.
+- RegExp (custom).
 
-- Post commit:
-- Changelog automation uging standard-version tool. (npm run release:minor)
+Features
+- Print Help.
+- Skip Unknown options and show help.
+- Friendly messages.
+- No externals libs.
+- Simple Configuration.
 
-
-- Unpublish npm module. (npm run unpublish)
 ```
 
 ### Fix
-```bash
-git add .
-npm run precommit
-git commit -m 'fix: some fix file'
-npm run release:patch
-```
+```js
+const parse = require('n-arg-parser');
+const opts = parse([
+  { name: "--remove", short: "-r" },
+  { name: "--test-int", short: '-ti', value: { type: "int" } },
+  { name: "--test-float", value: { type: "float" } },
+  { name: "--test-string", value: { type: "string" } },
+  { name: "--test-regexpr-int", value: { type: /[0-9]+/g } }
+]);
 
-### Minor change
-```bash
-git add .
-npm run precommit
-git commit -m 'feat: some change'
-npm run release:minor
-```
-
-### Major change
-```bash
-git add .
-npm run precommit
-git commit -m 'feat: large changes '
-npm run release:major
+console.log(JSON.stringify(opts));
 ```
