@@ -23,7 +23,7 @@ Features
 
 ```
 
-### Fix
+### USAGE
 ```js
 const parse = require('n-arg-parser');
 const opts = parse([
