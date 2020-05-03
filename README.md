@@ -8,23 +8,23 @@ npm i -g n-arg-parser
 
 ### FEATURES
 ```yaml
-Auto Parser For Argument Value.
+Auto Parser Argument Value.
 - Int.
 - Float.
 - String.
-- RegExp (custom).
+- Regular Expresion (custom).
 
-Features
-- Print Help.
+- Auto Generate Help.
+- Required fields.
 - Fail on Unknown options and show help.
 - Friendly messages.
 - No externals libs.
-- Simple User Model Configuration.
+- Easy Builder User Model Configuration.
 ```
 
 ### USAGE
 ```js
-const { ArgParser, Option } = require('./index');
+const { ArgParser, Option } = require('n-arg-parser');
 
 const opts = new ArgParser()
   .setDescription('Test Argument Parser')
@@ -35,7 +35,20 @@ const opts = new ArgParser()
   .parse();
 
 console.log(JSON.stringify(opts));
+
+// OUTPUT RESULT
+/*
+{
+  "argint": 12,
+  "argfloat": 12,
+  "argregexp": [
+    "21"
+  ]
+}
+*/
+
 ```
+
 
 ### RUN EXAMPLE
 
@@ -54,8 +67,8 @@ $ node example.js --help
 
         --arg-int             test int
         --arg-float           test float
-        --arg-string    -s
         --arg-regexp          test 2 numbers regexpr
+        --arg-string    -s
         --help          -h
 
 ```
