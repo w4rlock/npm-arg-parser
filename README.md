@@ -3,7 +3,7 @@
 
 ### INSTALLATION
 ```bash
-npm i -g n-arg-parser
+npm i -E n-arg-parser
 ```
 
 ### FEATURES
