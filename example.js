@@ -1,13 +1,12 @@
-#!/usr/bin/env node
-const parse = require('./index');
+const { ArgParser, Option } = require('./index');
 
-const opts = parse([
-  { name: '--remove', short: '-r' },
-  { name: '--test-int', short: '-ti', value: { type: 'int' } },
-  { name: '--test-float', value: { type: 'float' } },
-  { name: '--test-string', value: { type: 'string' } },
-  { name: '--test-regexpr-int', value: { type: /[0-9]+/g } },
-]);
+const opts = new ArgParser()
+  .setDescription('Test Argument Parser')
+  .addOption(new Option('--arg-int').desc('test int').int().isRequired())
+  .addOption(new Option('--arg-float') .desc('test float').float())
+  .addOption(new Option('--arg-string').string().short('-s'))
+  .addOption(new Option('--arg-regexp').regexp(/\d{2}/).desc('test 2 numbers regexpr').isRequired())
+  .parse();
 
 // eslint-disable-next-line no-console
-console.log(JSON.stringify(opts));
+console.log(JSON.stringify(opts, null , 2));

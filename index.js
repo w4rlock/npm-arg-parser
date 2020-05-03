@@ -1,200 +1,205 @@
+const Option = require('./src/option');
+const Util = require('./src/util');
+
 /**
- * Exit this script
  *
- * @param {int} code=0 Exit code
- * @param {string} msg='' message to log
+ * Main argument parser class
+ *
  */
-const exit = (code = 0, msg = '') => {
-  if (msg) {
+class ArgParser {
+  constructor() {
+    this.options = [];
+  }
+
+  setDescription(description) {
+    this.description = description;
+    return this;
+  }
+
+  addOption(opt) {
+    if (opt && opt.name !== '--help') {
+      this.options.push(opt);
+    }
+    return this;
+  }
+
+  findOption(cmdArg) {
+    return this.options.find(
+      (opt) => opt.name === cmdArg || opt.alias === cmdArg
+    );
+  }
+
+  help() {
+    const scriptName = `./${Util.getScriptName()}`;
+    if (this.description) {
+      // eslint-disable-next-line no-console
+      console.log(`\n  DESCRIPTION:\n\t${this.description}\n`);
+    }
+
     // eslint-disable-next-line no-console
-    console.log(`\n${msg}\n`);
-  }
-  process.exit(code);
-};
+    console.log(`\n  USAGE:\n\t${scriptName} <OPTION> \n`);
 
-/**
- * if string is cmd valid argument
- *
- * @param {string} p some string to check
- * @returns {boolean} if is parameter
- */
-// for: --help or -h
-const isParameter = (p) => p && p.startsWith('-');
+    if (this.options) {
+      // eslint-disable-next-line no-console
+      console.log('\n  OPTIONS:\n\t ');
+      // fix align for short alias option spaces column
+      const names = this.options.map((opt) => opt.name || '');
+      const aliases = this.options.map((opt) => opt.alias || '');
 
-/**
- * Parse user model for input value
- *
- * @param {object} model user model for handle argument value
- * @param {string} value command line value
- * @returns {any } parsed value
- */
-const parseArgValue = (model, value) => {
-  if (!model.value || !model.value.type) {
-    return value;
-  }
+      const maxNameLength = Util.maxStringLength(names);
+      const maxAliasLength = Util.maxStringLength(aliases);
 
-  const exitForType = (type) =>
-    exit(1, `\n  ERROR:\n\tParameter "${model.name}" requires a valid ${type}`);
+      const fixAliasSpace = (n = '') => ' '.repeat(maxNameLength - n.length);
+      const fixDescrSpace = (a = '') => ' '.repeat(maxAliasLength - a.length);
 
-  let res;
-  if (model.value.type instanceof RegExp) {
-    res = value.match(model.value.type);
-    if (!res || res.length < 1) {
-      const strRegExp = model.value.type.toLocaleString();
-      exitForType(`Regular Expression for "${strRegExp}"`);
-    }
-  } else {
-    switch (model.value.type) {
-      case 'float':
-        res = parseFloat(value);
-        if (Number.isNaN(res)) {
-          exitForType('float number');
-        }
-        break;
-      case 'int':
-        res = parseInt(value, 10);
-        if (Number.isNaN(res)) {
-          exitForType('int number');
-        }
-        break;
-      default:
-        res = value;
+      this.options.forEach((opt) => {
+        // no mutable string
+        const { name = '', alias = '', description = '' } = opt;
+        let fixAlias = '';
+        let fixDescr = '';
+
+        fixAlias = fixAliasSpace(name) + alias;
+        fixDescr = fixDescrSpace(alias) + description;
+        // eslint-disable-next-line no-console
+        console.log(`\t${name}    ${fixAlias}    ${fixDescr}`);
+      });
+
+      // eslint-disable-next-line no-console
+      console.log('\n');
     }
   }
 
-  return res;
-};
+  parse() {
+    this.options.push(new Option('--help').short('-h'));
 
-/**
- * Parse cmd parameter
- *
- * @param {string} flag --some
- * @param {string} value somevalue
- * @returns {object} name and value arg
- */
-const parseCmdArgument = (flag, value) => {
-  const v = flag.split('=');
-  const out = {
-    name: '',
-    value: '',
-    slice: false,
-  };
+    const out = {};
+    const jsArgs = Util.getScriptArguments();
 
-  [out.name] = v;
-  // --arg-name=value
-  if (v.length > 1) {
-    out.value = v.slice(1).join('=');
-    // yes: --arg value
-    // no:  --arg -value
-  } else if (!isParameter(value)) {
-    out.value = value;
-    out.slice = true;
-  }
-  return out;
-};
+    let arg;
+    let model;
+    let errMsg;
+    let outKey;
 
-/**
- * Show help menu with options.
- *
- * @param {array} modelOptions user options config
- */
-const showHelp = (modelOptions) => {
-  const { argv } = process;
-  const scriptName = `./${argv[1].substring(argv[1].lastIndexOf('/') + 1)}`;
-  // eslint-disable-next-line no-console
-  console.log(`
-    USAGE:
-      ${scriptName} <OPTION>
-
-    OPTION:
-  `);
-
-  modelOptions.forEach((opt) => {
-    // eslint-disable-next-line no-console
-    console.log(`\t${opt.name}`);
-  });
-};
-
-/**
- * Parse command line arguments
- * @param {object} model model object
- * @returns {object} parsed arguments
- */
-const parseCmdArguments = (modelOptions) => {
-  if (!modelOptions || modelOptions.length < 1) {
-    throw new Error('modelOptions is required');
-  }
-  const out = {};
-  // example arv = ["node", "path/to/script.js", "--arg", "val", "-x"]
-  const { argv } = process;
-  // argv[1] = /path/to/script.js
-  // scriptName = ./script.js
-  // const scriptName = `./${argv[1].substring(argv[1].lastIndexOf("/") + 1)}`;
-  // rest of arguments
-  const args = argv.slice(2);
-  // current iteration arg
-  let cmdFlag = '';
-  // next iteration arg (this can be a "value" or another --parameter)
-  let nextCmdFlag = '';
-  // user conf model
-  let model;
-  // command line parsed arg
-  // example: ./ejemplo.js --some xx
-  // { name: '--some', value: 'xx', slice: true}
-  let arg = {};
-  // parsed arguments are stored in "out" object with normalize "outKey"
-  // cmdFlag = --version
-  // outKey = version
-  let outKey;
-  // returns object model for argument
-  // in: --help
-  // out: { name: "--help", value: {...}}
-  const findModelForArg = (cmdArg) =>
-    modelOptions.find((opt) => opt.name === cmdArg || opt.short === cmdArg);
-
-  // command line all arguments
-  for (let i = 0; i < args.length; i += 1) {
-    cmdFlag = args[i];
-    nextCmdFlag = args[i + 1];
-    // smart raw parameter parsed
-    arg = parseCmdArgument(cmdFlag, nextCmdFlag);
-
-    if (arg.name === '--help') {
-      showHelp(modelOptions);
-      exit(0);
+    if (jsArgs.length === 0) {
+      this.help();
+      Util.exit(0);
     }
 
-    model = findModelForArg(arg.name);
-    // --invalid-param
-    if (!model) {
-      showHelp(modelOptions);
-      exit(1, `ERROR: \n Unknown option "${cmdFlag}"`);
-    }
-    // model.name: --help
-    // outKey = 'help'
-    outKey = model.name.replace(/[^a-z]/gi, '');
-    // model require an value
-    if (model.value) {
-      if (!arg.value) {
-        exit(1, `Error value is required for "${model.name}" parameter.`);
+    for (let i = 0; i < jsArgs.length; i += 1) {
+      arg = ArgParser.parseArgument(jsArgs[i], jsArgs[i + 1]);
+      model = this.findOption(arg.name);
+
+      if (arg.name === '--help') {
+        this.help();
+        Util.exit(0);
       }
-      out[outKey] = parseArgValue(model, arg.value);
-      if (arg.slice) {
-        i += 1;
+
+      // --unknown-param
+      if (!model) {
+        errMsg = ` => Unknown option "${arg.name}"\n`;
+        this.help();
+        Util.exit(1, errMsg);
       }
-    } else if (arg.value) {
-      exit(1, `Error argument "${model.name}" not allow values.`);
+
+      outKey = Util.normalizedParamName(model.name);
+      if (model.type) {
+        if (!arg.value) {
+          errMsg = `ERROR: value is required for "${model.name}" parameter.`;
+          Util.exit(1, errMsg);
+        }
+        out[outKey] = ArgParser.parseArgValue(model, arg.value);
+        if (arg.slice) i += 1;
+      } else if (arg.value) {
+        errMsg = `ERROR: argument "${model.name}" not allow values.`;
+        Util.exit(1, errMsg);
+      } else {
+        out[outKey] = true;
+      }
+    }
+
+    // Check required arguments
+    for (let i = 0; i < this.options.length; i += 1) {
+      if (this.options[i].required) {
+        outKey = Util.normalizedParamName(this.options[i].name);
+        if (!out[outKey]) {
+          errMsg = `ERROR: parameter "${this.options[i].name}" is required`;
+          Util.exit(1, errMsg);
+        }
+      }
+    }
+
+    return out;
+  }
+
+  static parseArgValue(model, value) {
+    if (!model || !model.type) {
+      return value;
+    }
+
+    const isNaN = (val) => Number.isNaN(val);
+
+    const exitForType = (msgType) => {
+      const { name } = model;
+      const msg = `ERROR:\n\tParameter "${name}" requires a valid ${msgType}.`;
+      Util.exit(1, msg);
+    };
+
+    const pFloat = (raw) => {
+      const res = parseFloat(raw);
+      if (isNaN(res)) exitForType('float number');
+      return res;
+    };
+
+    const pInt = (raw) => {
+      const res = parseInt(raw, 10);
+      if (isNaN(res)) exitForType('int number');
+      return res;
+    };
+
+    const matchRegExp = (raw, regexp) => {
+      const res = raw.match(regexp);
+      if (!res || res.length < 1) {
+        const strRegExp = regexp.toLocaleString();
+        exitForType(`Regular Expression for "${strRegExp}"`);
+      }
+      return res;
+    };
+
+    let res;
+    if (model.type instanceof RegExp) {
+      res = matchRegExp(value, model.type);
     } else {
-      out[outKey] = true;
+      switch (model.type) {
+        case 'float':
+          res = pFloat(value);
+          break;
+        case 'int':
+          res = pInt(value);
+          break;
+        default:
+          res = value;
+      }
     }
+
+    return res;
   }
 
-  if (Object.keys(out).length === 0) {
-    showHelp(modelOptions);
-    exit(0);
+  static parseArgument(argName, argValue) {
+    const v = argName.split('=');
+    const out = { name: v[0] };
+    // --arg=val
+    if (v.length > 1) {
+      out.value = v.slice(1).join('=');
+      // --arg value (positional)
+    } else if (!Util.isParameter(argValue)) {
+      out.value = argValue;
+      out.slice = true;
+    }
+    return out;
   }
+}
 
-  return out;
+module.exports = {
+  Option,
+  ArgParser,
 };
-
-module.exports = parseCmdArguments;
