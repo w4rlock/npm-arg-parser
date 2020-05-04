@@ -1,6 +1,9 @@
 [![npm version](https://badge.fury.io/js/n-arg-parser.svg)](https://badge.fury.io/js/n-arg-parser)
 [![npm downloads](https://img.shields.io/npm/dt/n-arg-parser.svg?style=flat)](https://www.npmjs.com/package/n-arg-parser)
 
+### DESCRIPTION
+A simple and easy command line arguments parser.
+
 ### INSTALLATION
 ```bash
 npm i -E n-arg-parser
