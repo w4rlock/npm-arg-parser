@@ -89,4 +89,10 @@ $ node example.js --arg-int 22
 
 $ node example.js --arg-int 12 --arg-regexp aa
   ERROR: parameter "--arg-regexp" requires a valid Regular Expression for "/\d{2}/".
+
+$ node example.js --arg-int 12 --arg-regexp 22
+{
+  "argint": 12,
+  "argregexp": [ "22" ]
+}
 ```
