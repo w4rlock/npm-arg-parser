@@ -69,6 +69,11 @@ class ArgParser {
     }
   }
 
+  /**
+   * Main Parser Method
+   *
+   * @returns {object} parsed model
+   */
   parse() {
     this.options.push(new Option('--help').short('-h'));
 
@@ -89,7 +94,7 @@ class ArgParser {
       arg = ArgParser.parseArgument(jsArgs[i], jsArgs[i + 1]);
       model = this.findOption(arg.name);
 
-      if (arg.name === '--help') {
+      if (model.name === '--help') {
         this.help();
         Util.exit(0);
       }
@@ -131,6 +136,14 @@ class ArgParser {
     return out;
   }
 
+  /**
+   * Parse CommandLine argument.
+   *
+   * @static
+   * @param {object} model user model configuration.
+   * @param {string} value raw command line value
+   * @returns {any} parsed value.
+   */
   static parseArgValue(model, value) {
     if (!model || !model.type) {
       return value;
@@ -184,6 +197,14 @@ class ArgParser {
     return res;
   }
 
+  /**
+   * Parse command line argument positional arg
+   *
+   * @static
+   * @param {string} argName command line argument
+   * @param {string } argValue raw command line value
+   * @returns {object} name y value object
+   */
   static parseArgument(argName, argValue) {
     const v = argName.split('=');
     const out = { name: v[0] };
