@@ -2,7 +2,8 @@
 [![npm downloads](https://img.shields.io/npm/dt/n-arg-parser.svg?style=flat)](https://www.npmjs.com/package/n-arg-parser)
 
 ### DESCRIPTION
-A simple and easy command line arguments parser.
+A simple and easy command line arguments parser for Node js.
+
 
 ### INSTALLATION
 ```bash
