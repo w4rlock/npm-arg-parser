@@ -36,16 +36,6 @@ const opts = new ArgParser()
 
 console.log(JSON.stringify(opts));
 
-// OUTPUT RESULT
-/*
-{
-  "argint": 12,
-  "argfloat": 12,
-  "argregexp": [
-    "21"
-  ]
-}
-*/
 
 ```
 
