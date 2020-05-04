@@ -94,17 +94,18 @@ class ArgParser {
       arg = ArgParser.parseArgument(jsArgs[i], jsArgs[i + 1]);
       model = this.findOption(arg.name);
 
+      // --unknown-param
+      if (!model) {
+        errMsg = ` ERROR: unknown option "${arg.name}"\n`;
+        this.help();
+        Util.exit(1, errMsg);
+      }
+
       if (model.name === '--help') {
         this.help();
         Util.exit(0);
       }
 
-      // --unknown-param
-      if (!model) {
-        errMsg = ` => Unknown option "${arg.name}"\n`;
-        this.help();
-        Util.exit(1, errMsg);
-      }
 
       outKey = Util.normalizedParamName(model.name);
       if (model.type) {
@@ -127,7 +128,7 @@ class ArgParser {
       if (this.options[i].required) {
         outKey = Util.normalizedParamName(this.options[i].name);
         if (!out[outKey]) {
-          errMsg = `ERROR: parameter "${this.options[i].name}" is required`;
+          errMsg = `ERROR: parameter "${this.options[i].name}" is required.`;
           Util.exit(1, errMsg);
         }
       }
@@ -153,7 +154,7 @@ class ArgParser {
 
     const exitForType = (msgType) => {
       const { name } = model;
-      const msg = `ERROR:\n\tParameter "${name}" requires a valid ${msgType}.`;
+      const msg = `ERROR: parameter "${name}" requires a valid ${msgType}.`;
       Util.exit(1, msg);
     };
 

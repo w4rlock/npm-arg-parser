@@ -72,3 +72,21 @@ $ node example.js --help
         --help          -h
 
 ```
+### VALIDATIONS
+
+```bash
+$ node example.js --arg-idsad
+  ERROR: unknown option "--arg-idsad"
+
+
+$ node example.js --arg-int aaa
+  ERROR: parameter "--arg-int" requires a valid int number.
+
+
+$ node example.js --arg-int 22
+  ERROR: parameter "--arg-regexp" is required.
+
+
+$ node example.js --arg-int 12 --arg-regexp aa
+  ERROR: parameter "--arg-regexp" requires a valid Regular Expression for "/\d{2}/".
+```
